@@ -5,6 +5,7 @@ data class ResultResponse (
     val phonetics : List<Phonetics>,
     val meanings : List<Meanings>
     )
+
 data class Phonetics (
     val text : String,
     val audio : String

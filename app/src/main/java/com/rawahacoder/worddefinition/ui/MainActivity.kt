@@ -1,22 +1,25 @@
 package com.rawahacoder.worddefinition.ui
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import androidx.activity.viewModels
 
 import com.rawahacoder.worddefinition.databinding.ActivityMainBinding
 import com.rawahacoder.worddefinition.repository.DictionaryRepo
-import com.rawahacoder.worddefinition.service.Definitions
 import com.rawahacoder.worddefinition.service.DictionaryService
-import com.rawahacoder.worddefinition.service.ResultResponse
+import com.rawahacoder.worddefinition.viewmodel.SearchViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    
-    val TAG = javaClass.simpleName
+    private val searchViewModel by viewModels<SearchViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,27 +29,43 @@ class MainActivity : AppCompatActivity() {
 
         binding.searchButton.setOnClickListener{
             val word = binding.searchWord.text.toString()
+            if (word.isEmpty()){
+                return@setOnClickListener
+            }
             performSearch(word)
+            it.hideKeyboard()
+        }
+        setupViewModels()
+    }
+
+    private fun setupViewModels() {
+        val service = DictionaryService.instance
+        searchViewModel.dictionaryRepo = DictionaryRepo(service)
+    }
+
+    private fun performSearch(word: String) {
+        showProgressBar()
+        GlobalScope.launch {
+            val result = searchViewModel.searchWord(word)
+            withContext(Dispatchers.Main) {
+                hideProgressBar()
+                "Definition: ${result[0].definition}".also { binding.definitionView.text = it }
+                "Example: ${result[0].example}".also { binding.exampleView.text = it }
+                "Synonyms: ${result[0].synonyms}".also { binding.synonymsView.text = it }
+            }
 
         }
     }
 
-    private fun performSearch(word: String) {
-        val dictionaryService = DictionaryService.instance
-        val dictionaryRepo = DictionaryRepo(dictionaryService)
-        GlobalScope.launch {
-            val results = dictionaryRepo.searchWord(word)
+    private fun showProgressBar() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+    private fun hideProgressBar() {
+        binding.progressBar.visibility = View.INVISIBLE
+    }
 
-            val dictionaryResult : ResultResponse? = results.body()?.get(0)
-
-            val definitions: List<Definitions> =
-                dictionaryResult?.meanings?.get(0)?.definitions ?: listOf()
-
-
-            Log.i(TAG, "Results: definition = ${definitions.get(0).definition}"  )
-            Log.i(TAG, "Results: example = ${definitions.get(0).example}"  )
-            Log.i(TAG, "Results: synonyms = ${definitions.get(0).synonyms}"  )
-
-        }
+    fun View.hideKeyboard() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(windowToken, 0)
     }
 }
