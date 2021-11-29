@@ -2,4 +2,7 @@
     <string name="app_name">Word Definition</string>
     <string name="word">Word</string>
     <string name="search">Search</string>
+    <string name="definition">Definition</string>
+    <string name="example">Example</string>
+    <string name="synonyms">Synonyms</string>
 </resources>

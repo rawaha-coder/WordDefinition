@@ -3,19 +3,30 @@ package com.rawahacoder.worddefinition.ui
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import androidx.activity.viewModels
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.rawahacoder.worddefinition.adapter.WordDefinitionListAdapter
 
 import com.rawahacoder.worddefinition.databinding.ActivityMainBinding
 import com.rawahacoder.worddefinition.repository.DictionaryRepo
 import com.rawahacoder.worddefinition.service.Definitions
 import com.rawahacoder.worddefinition.service.DictionaryService
 import com.rawahacoder.worddefinition.service.ResultResponse
+import com.rawahacoder.worddefinition.viewmodel.SearchViewModel
+import com.rawahacoder.worddefinition.viewmodel.WordDefinitionsViewData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), WordDefinitionListAdapter.WordDefinitionListAdapterListener {
 
     private lateinit var binding: ActivityMainBinding
-    
+    private val searchViewModel by viewModels<SearchViewModel>()
+    private lateinit var wordDefinitionListAdapter: WordDefinitionListAdapter
+
     val TAG = javaClass.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,26 +38,48 @@ class MainActivity : AppCompatActivity() {
         binding.searchButton.setOnClickListener{
             val word = binding.searchWord.text.toString()
             performSearch(word)
+        }
+        setupViewModels()
+        updateControls()
+    }
+
+    private fun setupViewModels() {
+        val service = DictionaryService.instance
+        searchViewModel.dictionaryRepo = DictionaryRepo(service)
+    }
+
+    private fun updateControls() {
+        binding.wordDefinitionRecyclerView.setHasFixedSize(true)
+        val layoutManager = LinearLayoutManager(this)
+        binding.wordDefinitionRecyclerView.layoutManager = layoutManager
+        val dividerItemDecoration = DividerItemDecoration(
+            binding.wordDefinitionRecyclerView.context,
+            layoutManager.orientation)
+        binding.wordDefinitionRecyclerView.addItemDecoration(dividerItemDecoration)
+        wordDefinitionListAdapter = WordDefinitionListAdapter(null, this, this)
+        binding.wordDefinitionRecyclerView.adapter = wordDefinitionListAdapter
+    }
+
+    private fun performSearch(word: String) {
+        showProgressBar()
+        GlobalScope.launch {
+            val result = searchViewModel.searchWord(word)
+            withContext(Dispatchers.Main) {
+                hideProgressBar()
+                wordDefinitionListAdapter.setSearchData(result)
+            }
 
         }
     }
 
-    private fun performSearch(word: String) {
-        val dictionaryService = DictionaryService.instance
-        val dictionaryRepo = DictionaryRepo(dictionaryService)
-        GlobalScope.launch {
-            val results = dictionaryRepo.searchWord(word)
+    override fun onShowDetails(wordDefinitionsViewData: WordDefinitionsViewData) {
+        TODO("Not yet implemented")
+    }
 
-            val dictionaryResult : ResultResponse? = results.body()?.get(0)
-
-            val definitions: List<Definitions> =
-                dictionaryResult?.meanings?.get(0)?.definitions ?: listOf()
-
-
-            Log.i(TAG, "Results: definition = ${definitions.get(0).definition}"  )
-            Log.i(TAG, "Results: example = ${definitions.get(0).example}"  )
-            Log.i(TAG, "Results: synonyms = ${definitions.get(0).synonyms}"  )
-
-        }
+    private fun showProgressBar() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+    private fun hideProgressBar() {
+        binding.progressBar.visibility = View.INVISIBLE
     }
 }
