@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Word Definition</string>
     <string name="word">Word</string>
+    <string name="search">Search</string>
 </resources>
