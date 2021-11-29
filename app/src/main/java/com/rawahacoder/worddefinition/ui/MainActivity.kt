@@ -1,6 +1,5 @@
 package com.rawahacoder.worddefinition.ui
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -49,9 +48,16 @@ class MainActivity : AppCompatActivity() {
             val result = searchViewModel.searchWord(word)
             withContext(Dispatchers.Main) {
                 hideProgressBar()
-                "Definition: ${result[0].definition}".also { binding.definitionView.text = it }
-                "Example: ${result[0].example}".also { binding.exampleView.text = it }
-                "Synonyms: ${result[0].synonyms}".also { binding.synonymsView.text = it }
+                if (result.isEmpty()) {
+                    "No result found".also { binding.definitionView.text = it }
+                    "".also { binding.exampleView.text = it }
+                    "".also { binding.synonymsView.text = it }
+                }else{
+                    "Definition: ${result[0].definition}".also { binding.definitionView.text = it }
+                    "Example: ${result[0].example}".also { binding.exampleView.text = it }
+                    "Synonyms: ${result[0].synonyms}".also { binding.synonymsView.text = it }
+                }
+
             }
 
         }
@@ -64,8 +70,8 @@ class MainActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.INVISIBLE
     }
 
-    fun View.hideKeyboard() {
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    private fun View.hideKeyboard() {
+        val imm = context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(windowToken, 0)
     }
 }
