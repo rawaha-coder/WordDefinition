@@ -1,11 +1,11 @@
 package com.rawahacoder.worddefinition.ui
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
+import com.rawahacoder.worddefinition.R
 
 import com.rawahacoder.worddefinition.databinding.ActivityMainBinding
 import com.rawahacoder.worddefinition.repository.DictionaryRepo
@@ -49,11 +49,20 @@ class MainActivity : AppCompatActivity() {
             val result = searchViewModel.searchWord(word)
             withContext(Dispatchers.Main) {
                 hideProgressBar()
-                "Definition: ${result[0].definition}".also { binding.definitionView.text = it }
-                "Example: ${result[0].example}".also { binding.exampleView.text = it }
-                "Synonyms: ${result[0].synonyms}".also { binding.synonymsView.text = it }
+                if (result.isEmpty()) {
+                    binding.wordView.text = getString(R.string.result_not_found)
+                    binding.phoneticView.text = ""
+                    binding.exclamationView.text = ""
+                    binding.nounView.text = ""
+                    binding.verbView.text= ""
+                }else{
+                    binding.wordView.text = result[0].word
+                    binding.phoneticView.text = result[0].phonetic
+                    binding.exclamationView.text = result[0].exclamation
+                    binding.nounView.text = result[0].noun
+                    binding.verbView.text= result[0].verb
+                }
             }
-
         }
     }
 
@@ -64,8 +73,8 @@ class MainActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.INVISIBLE
     }
 
-    fun View.hideKeyboard() {
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    private fun View.hideKeyboard() {
+        val imm = context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(windowToken, 0)
     }
 }

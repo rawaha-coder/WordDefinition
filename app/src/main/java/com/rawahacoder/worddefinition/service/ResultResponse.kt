@@ -18,8 +18,7 @@ data class Meanings (
 
 data class Definitions (
     val definition : String,
-    val example : String,
-    val synonyms : List<String>
+    val example : String
 )
 
 

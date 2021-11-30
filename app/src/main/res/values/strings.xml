@@ -5,4 +5,5 @@
     <string name="definition">Definition</string>
     <string name="example">Example</string>
     <string name="synonyms">Synonyms</string>
+    <string name="result_not_found">Result not found, check the word</string>
 </resources>

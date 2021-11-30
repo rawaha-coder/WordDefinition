@@ -29,16 +29,32 @@ class SearchViewModel(application: Application) :
 }
 
 data class WordDefinitionsViewData(
-    var definition: String? = "",
-    var example: String? = "",
-    var synonyms: List<String> = listOf()
+    var word: String? = "",
+    var phonetic: String? = "",
+    var exclamation: String? = "",
+    var noun: String? = "",
+    var verb: String? = "",
 )
 
-private fun resultResponseToWordDefinitionsView(
-    resultResponse: ResultResponse): WordDefinitionsViewData {
-    return WordDefinitionsViewData(
-        resultResponse.meanings[0].definitions[0].definition,
-        resultResponse.meanings[0].definitions[0].example,
-        resultResponse.meanings[0].definitions[0].synonyms)
+private fun resultResponseToWordDefinitionsView(resultResponse: ResultResponse): WordDefinitionsViewData {
+    return when(resultResponse.meanings.size){
+        3 -> WordDefinitionsViewData(
+            "Word: ${resultResponse.word}",
+            "Phonetic: ${resultResponse.phonetics[0].text}",
+            "Exclamation: ${resultResponse.meanings[0].definitions[0].definition}",
+            "Noun: ${resultResponse.meanings[0].definitions[0].definition}",
+            "Verb: ${resultResponse.meanings[0].definitions[0].definition}")
+        2 -> WordDefinitionsViewData(
+            "Word: ${resultResponse.word}",
+            "Phonetic: ${resultResponse.phonetics[0].text}",
+            "Exclamation: ${resultResponse.meanings[0].definitions[0].definition}",
+            "Noun: ${resultResponse.meanings[0].definitions[0].definition}")
+        1 -> WordDefinitionsViewData(
+            "Word: ${resultResponse.word}",
+            "Phonetic: ${resultResponse.phonetics[0].text}",
+            "Exclamation: ${resultResponse.meanings[0].definitions[0].definition}")
+
+        else -> WordDefinitionsViewData()
+    }
 }
 
